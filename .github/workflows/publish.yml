@@ -1,0 +1,35 @@
+
+name: Publish WarehouseAccounting
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore WarehouseAccounting.csproj
+
+      - name: Publish
+        run: dotnet publish WarehouseAccounting.csproj -c Release -o ./publish -r win-x86
+
+      - name: Deploy to MonsterASP
+        uses: rasmusbuchholdt/simply-web-deploy@2.1.0
+        with:
+          website-name: ${{ site110192 }}
+          server-computer-name: ${{ https://site110192.siteasp.net:8172 }}
+          server-username: ${{ site110192 }}
+          server-password: ${{ Kz6#i?M5Bt4_ }}
