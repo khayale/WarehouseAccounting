@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - نظام المستودعات</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+<header class="topbar">
+    <div class="brand">Warehouse Accounting</div>
+    <nav>
+        <a href="/">الرئيسية</a>
+        <a href="#">المنتجات</a>
+        <a href="#">المخزون</a>
+        <a href="#">الموردون</a>
+    </nav>
+</header>
+<main class="container">
+    @RenderBody()
+</main>
+<footer>© @DateTime.Now.Year - نظام المستودعات والمحاسبة</footer>
+</body>
+</html>
