@@ -14,133 +14,152 @@ namespace WarehouseAccounting.Controllers
             _context = context;
         }
 
-        // =========================
-        // INDEX
-        // =========================
+        // GET: Categories
         public async Task<IActionResult> Index()
         {
-            var categories = await _context.Categories
-                .ToListAsync();
-
+            var categories = await _context.Categories.ToListAsync();
             return View(categories);
         }
 
-        // =========================
-        // CREATE - GET
-        // =========================
+        // GET: Categories/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // =========================
-        // CREATE - POST
-        // =========================
+        // POST: Categories/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Category category)
         {
-            if (!ModelState.IsValid)
-                return View(category);
-
-            category.Id = category.Id?.Trim() ?? "";
-
-            if (string.IsNullOrWhiteSpace(category.Id))
+            if (ModelState.IsValid)
             {
-                ModelState.AddModelError(
-                    "Id",
-                    "رقم المنتج مطلوب.");
+                _context.Categories.Add(category);
+                await _context.SaveChangesAsync();
 
-                return View(category);
+                return RedirectToAction(nameof(Index));
             }
-
-            bool exists = await _context.Categories
-                .AnyAsync(x => x.Id == category.Id);
-
-            if (exists)
-            {
-                ModelState.AddModelError(
-                    "Id",
-                    "رقم المنتج موجود مسبقاً.");
-
-                return View(category);
-            }
-
-            _context.Categories.Add(category);
-
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
-        }
-
-        // =========================
-        // EDIT - GET
-        // =========================
-        public async Task<IActionResult> Edit(string id)
-        {
-            if (string.IsNullOrWhiteSpace(id))
-                return NotFound();
-
-            var category = await _context.Categories
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == id);
-
-            if (category == null)
-                return NotFound();
 
             return View(category);
         }
 
-        // =========================
-        // EDIT - POST
-        // =========================
+        // GET: Categories/Edit
+        public async Task<IActionResult> Edit(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return NotFound();
+            }
+
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.categ_num == id);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return View(category);
+        }
+
+        // POST: Categories/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
-            string oldId,
-            Category model)
+            string id,
+            string categ_num,
+            string? categ_name,
+            decimal? price,
+            string? qntt,
+            string? qnty,
+            int? group_num)
         {
-            if (string.IsNullOrWhiteSpace(oldId))
-                return NotFound();
-
-            oldId = oldId.Trim();
-
-            // ==========================================
-            // جلب السجل الأصلي من قاعدة البيانات
-            // ==========================================
-            var oldCategory = await _context.Categories
-                .FirstOrDefaultAsync(x => x.Id == oldId);
-
-            if (oldCategory == null)
-                return NotFound();
-
-            // ==========================================
-            // تنظيف الرقم الجديد
-            // ==========================================
-            model.Id = model.Id?.Trim() ?? "";
-
-            if (string.IsNullOrWhiteSpace(model.Id))
+            if (string.IsNullOrEmpty(id))
             {
-                ModelState.AddModelError(
-                    "Id",
-                    "رقم المنتج مطلوب.");
-
-                return View(model);
+                return NotFound();
             }
 
-            // ==========================================
-            // التحقق من وجود الرقم الجديد
-            // ==========================================
-            if (model.Id != oldId)
+            // تحميل السجل الأصلي من قاعدة البيانات
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.categ_num == id);
+
+            if (category == null)
             {
-                bool newIdExists = await _context.Categories
-                    .AnyAsync(x => x.Id == model.Id);
+                return NotFound();
+            }
 
-                if (newIdExists)
+            // تعديل الحقول فقط
+            // السجل الأصلي يبقى محفوظًا بالنسبة لبقية الحقول
+
+            category.categ_num = categ_num;
+            category.categ_name = categ_name;
+            category.price = price;
+            category.qntt = qntt;
+            category.qnty = qnty;
+            category.group_num = group_num;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await CategoryExists(id))
                 {
-                    ModelState.AddModelError(
-                        "Id",
-                        "رقم المنتج الجديد موجود مسبقاً.");
-
-                    return View(model);
+                    return NotFound();
                 }
+
+                throw;
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Categories/Delete
+        public async Task<IActionResult> Delete(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return NotFound();
+            }
+
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.categ_num == id);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return View(category);
+        }
+
+        // POST: Categories/Delete
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return NotFound();
+            }
+
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.categ_num == id);
+
+            if (category != null)
+            {
+                _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        private async Task<bool> CategoryExists(string id)
+        {
+            return await _context.Categories
+                .AnyAsync(c => c.categ_num == id);
+        }
+    }
+}
