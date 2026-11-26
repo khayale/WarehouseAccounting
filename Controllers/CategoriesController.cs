@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WarehouseAccounting.Data;
+using WarehouseAccounting.Models;
 
 namespace WarehouseAccounting.Controllers
 {
@@ -15,19 +16,96 @@ namespace WarehouseAccounting.Controllers
 
         public async Task<IActionResult> Index()
         {
-            try
+            var categories = await _context.Categories
+                .AsNoTracking()
+                .ToListAsync();
+
+            return View(categories);
+        }
+
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Category category)
+        {
+            if (!ModelState.IsValid)
+                return View(category);
+
+            _context.Categories.Add(category);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Edit(string? id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                return NotFound();
+
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (category == null)
+                return NotFound();
+
+            return View(category);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(string id, Category category)
+        {
+            if (id != category.Id)
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return View(category);
+
+            var existing = await _context.Categories
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (existing == null)
+                return NotFound();
+
+            existing.Name = category.Name;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Delete(string? id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                return NotFound();
+
+            var category = await _context.Categories
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (category == null)
+                return NotFound();
+
+            return View(category);
+        }
+
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(string id)
+        {
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (category != null)
             {
-                var count = await _context.Categories.CountAsync();
-                return Content($"DATABASE OK - Categories count: {count}");
+                _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
             }
-            catch (Exception ex)
-            {
-                return Content(
-                    "DATABASE ERROR\n\n" +
-                    ex.GetType().FullName + "\n\n" +
-                    ex.Message,
-                    "text/plain");
-            }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }
