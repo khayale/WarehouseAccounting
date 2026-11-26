@@ -12,8 +12,10 @@
 
     @Html.AntiForgeryToken()
 
-    <!-- Primary Key -->
-    <input type="hidden" name="id" value="@Model.categ_num" />
+    <!-- الرقم القديم، نستخدمه للعثور على السجل -->
+    <input type="hidden"
+           name="oldId"
+           value="@Model.categ_num" />
 
     <div asp-validation-summary="ModelOnly"
          class="text-danger mb-3">
@@ -21,12 +23,16 @@
 
     <!-- Category Number -->
     <div class="mb-3">
-        <label class="form-label">Category Number</label>
+        <label asp-for="categ_num" class="form-label">
+            Category Number
+        </label>
 
-        <input type="text"
-               class="form-control"
-               value="@Model.categ_num"
-               readonly />
+        <input asp-for="categ_num"
+               class="form-control" />
+
+        <span asp-validation-for="categ_num"
+              class="text-danger">
+        </span>
     </div>
 
     <!-- Category Name -->
