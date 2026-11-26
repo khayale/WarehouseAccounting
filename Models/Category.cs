@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WarehouseAccounting.Models
 {
-    [Table("categories", Schema = "storesdata")]
+    [Table("categories", Schema = "dbo")]
     public class Category
     {
         [Key]
