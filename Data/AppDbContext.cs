@@ -18,7 +18,7 @@ namespace WarehouseAccounting.Data
 
             modelBuilder.Entity<Category>(entity =>
             {
-                entity.ToTable("categories", "storesdata");
+                entity.ToTable("categories", "dbo");
                 entity.HasKey(e => e.Id);
 
                 entity.Property(e => e.Id)
