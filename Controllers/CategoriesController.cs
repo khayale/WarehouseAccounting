@@ -14,22 +14,33 @@ namespace WarehouseAccounting.Controllers
             _context = context;
         }
 
-        // =========================
+        // =========================================================
         // INDEX
-        // =========================
+        // =========================================================
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var categories = await _context.Categories
-                .AsNoTracking()
-                .ToListAsync();
+            try
+            {
+                var categories = await _context.Categories
+                    .AsNoTracking()
+                    .ToListAsync();
 
-            return View(categories);
+                return View(categories);
+            }
+            catch (Exception ex)
+            {
+                return Content(
+                    "INDEX ERROR:\n\n" +
+                    ex.ToString()
+                );
+            }
         }
 
 
-        // =========================
+        // =========================================================
         // CREATE - GET
-        // =========================
+        // =========================================================
         [HttpGet]
         public IActionResult Create()
         {
@@ -37,105 +48,179 @@ namespace WarehouseAccounting.Controllers
         }
 
 
-        // =========================
+        // =========================================================
         // CREATE - POST
-        // =========================
+        // =========================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Category category)
         {
-            if (string.IsNullOrWhiteSpace(category.categ_num))
+            try
             {
-                ModelState.AddModelError(
-                    "categ_num",
-                    "Category Number is required.");
-            }
+                // categ_num مطلوب
+                if (string.IsNullOrWhiteSpace(category.categ_num))
+                {
+                    ModelState.AddModelError(
+                        nameof(category.categ_num),
+                        "Category Number is required."
+                    );
+                }
 
-            if (await _context.Categories
-                .AnyAsync(x => x.categ_num == category.categ_num))
+                // منع تكرار categ_num
+                if (!string.IsNullOrWhiteSpace(category.categ_num))
+                {
+                    bool exists = await _context.Categories
+                        .AnyAsync(x => x.categ_num == category.categ_num);
+
+                    if (exists)
+                    {
+                        ModelState.AddModelError(
+                            nameof(category.categ_num),
+                            "Category Number already exists."
+                        );
+                    }
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return View(category);
+                }
+
+                _context.Categories.Add(category);
+
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
             {
-                ModelState.AddModelError(
-                    "categ_num",
-                    "Category Number already exists.");
+                return Content(
+                    "CREATE ERROR:\n\n" +
+                    ex.ToString()
+                );
             }
-
-            if (!ModelState.IsValid)
-            {
-                return View(category);
-            }
-
-            _context.Categories.Add(category);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
         }
 
 
-        // =========================
+        // =========================================================
         // EDIT - GET
-        // =========================
+        // =========================================================
         [HttpGet]
         public async Task<IActionResult> Edit(string id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            try
             {
-                return NotFound();
+                if (string.IsNullOrWhiteSpace(id))
+                {
+                    return NotFound();
+                }
+
+                var category = await _context.Categories
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.categ_num == id);
+
+                if (category == null)
+                {
+                    return NotFound();
+                }
+
+                return View(category);
             }
-
-            var category = await _context.Categories
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.categ_num == id);
-
-            if (category == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                return Content(
+                    "EDIT GET ERROR:\n\n" +
+                    ex.ToString()
+                );
             }
-
-            return View(category);
         }
 
 
-        // =========================
+        // =========================================================
         // EDIT - POST
-        // =========================
+        // =========================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
             string oldId,
             Category category)
         {
-            // الرقم الجديد إلزامي
-            if (string.IsNullOrWhiteSpace(category.categ_num))
-            {
-                ModelState.AddModelError(
-                    "categ_num",
-                    "Category Number is required.");
-
-                return View(category);
-            }
-
-            // هل الرقم الجديد مستخدم في سجل آخر؟
-            bool duplicate = await _context.Categories
-                .AsNoTracking()
-                .AnyAsync(x =>
-                    x.categ_num == category.categ_num &&
-                    x.categ_num != oldId);
-
-            if (duplicate)
-            {
-                ModelState.AddModelError(
-                    "categ_num",
-                    "Category Number already exists.");
-
-                return View(category);
-            }
-
             try
             {
-                // تحديث الصف الموجود مباشرة.
-                // لا نقوم بتغيير Primary Key لكيان EF المتتبع.
-                int affectedRows = await _context.Database
-                    .ExecuteSqlInterpolatedAsync($@"
+                // -------------------------------------------------
+                // 1. التأكد من الرقم القديم
+                // -------------------------------------------------
+                if (string.IsNullOrWhiteSpace(oldId))
+                {
+                    return Content(
+                        "EDIT ERROR: oldId is empty."
+                    );
+                }
+
+
+                // -------------------------------------------------
+                // 2. التأكد من categ_num الجديد
+                // -------------------------------------------------
+                if (string.IsNullOrWhiteSpace(category.categ_num))
+                {
+                    ModelState.AddModelError(
+                        nameof(category.categ_num),
+                        "Category Number is required."
+                    );
+
+                    return View(category);
+                }
+
+
+                // -------------------------------------------------
+                // 3. التأكد أن السجل المطلوب موجود
+                // -------------------------------------------------
+                var existingCategory = await _context.Categories
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.categ_num == oldId);
+
+                if (existingCategory == null)
+                {
+                    return Content(
+                        "EDIT ERROR: Record not found.\n" +
+                        "oldId = " + oldId
+                    );
+                }
+
+
+                // -------------------------------------------------
+                // 4. منع تكرار categ_num
+                // -------------------------------------------------
+                bool duplicate = await _context.Categories
+                    .AsNoTracking()
+                    .AnyAsync(x =>
+                        x.categ_num == category.categ_num &&
+                        x.categ_num != oldId
+                    );
+
+                if (duplicate)
+                {
+                    ModelState.AddModelError(
+                        nameof(category.categ_num),
+                        "Category Number already exists."
+                    );
+
+                    return View(category);
+                }
+
+
+                // -------------------------------------------------
+                // 5. تحديث الصف نفسه في dbo.categories
+                //
+                // oldId = رقم الصف الموجود حاليًا
+                // category.categ_num = الرقم الجديد
+                //
+                // لا نعمل Add
+                // لا نعمل Delete
+                // لا نغيّر مفتاح كيان EF المتتبع
+                // -------------------------------------------------
+                int affectedRows =
+                    await _context.Database.ExecuteSqlInterpolatedAsync($@"
                         UPDATE dbo.categories
                         SET
                             categ_num       = {category.categ_num},
@@ -153,77 +238,110 @@ namespace WarehouseAccounting.Controllers
                             expiry_date     = {category.expiry_date},
                             group_name      = {category.group_name},
                             group_num       = {category.group_num}
-                        WHERE categ_num = {oldId}");
+                        WHERE categ_num = {oldId}
+                    ");
 
+
+                // -------------------------------------------------
+                // 6. التأكد أن UPDATE عدّل صفًا واحدًا
+                // -------------------------------------------------
                 if (affectedRows == 0)
                 {
-                    ModelState.AddModelError(
-                        "",
-                        "The category was not found.");
-
-                    return View(category);
+                    return Content(
+                        "EDIT ERROR: UPDATE affected 0 rows.\n" +
+                        "oldId = " + oldId
+                    );
                 }
+
+
+                // -------------------------------------------------
+                // 7. نجاح التعديل
+                // -------------------------------------------------
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(
-                    "",
-                    "Error while saving: " + ex.Message);
-
-                return View(category);
+                // -------------------------------------------------
+                // إظهار الخطأ الحقيقي بدل HTTP 500 الغامض
+                // -------------------------------------------------
+                return Content(
+                    "EDIT POST ERROR:\n\n" +
+                    ex.ToString()
+                );
             }
-
-            return RedirectToAction(nameof(Index));
         }
 
 
-        // =========================
+        // =========================================================
         // DELETE - GET
-        // =========================
+        // =========================================================
         [HttpGet]
         public async Task<IActionResult> Delete(string id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            try
             {
-                return NotFound();
+                if (string.IsNullOrWhiteSpace(id))
+                {
+                    return NotFound();
+                }
+
+                var category = await _context.Categories
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.categ_num == id);
+
+                if (category == null)
+                {
+                    return NotFound();
+                }
+
+                return View(category);
             }
-
-            var category = await _context.Categories
-                .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.categ_num == id);
-
-            if (category == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                return Content(
+                    "DELETE GET ERROR:\n\n" +
+                    ex.ToString()
+                );
             }
-
-            return View(category);
         }
 
 
-        // =========================
+        // =========================================================
         // DELETE - POST
-        // =========================
+        // =========================================================
         [HttpPost]
         [ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            try
             {
-                return NotFound();
-            }
+                if (string.IsNullOrWhiteSpace(id))
+                {
+                    return NotFound();
+                }
 
-            var category = await _context.Categories
-                .FirstOrDefaultAsync(x => x.categ_num == id);
+                var category = await _context.Categories
+                    .FirstOrDefaultAsync(x => x.categ_num == id);
 
-            if (category != null)
-            {
+                if (category == null)
+                {
+                    return NotFound();
+                }
+
                 _context.Categories.Remove(category);
-                await _context.SaveChangesAsync();
-            }
 
-            return RedirectToAction(nameof(Index));
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                return Content(
+                    "DELETE ERROR:\n\n" +
+                    ex.ToString()
+                );
+            }
         }
     }
 }
