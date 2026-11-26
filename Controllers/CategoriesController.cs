@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Data.SqlClient;
 using WarehouseAccounting.Data;
 using WarehouseAccounting.Models;
 
@@ -15,41 +14,41 @@ namespace WarehouseAccounting.Controllers
             _context = context;
         }
 
+        // GET: Categories
         public async Task<IActionResult> Index()
         {
-            var categories = await _context.Categories
-                .AsNoTracking()
-                .ToListAsync();
-
-            return View(categories);
+            return View(await _context.Categories.ToListAsync());
         }
 
+        // GET: Categories/Create
         public IActionResult Create()
         {
             return View();
         }
 
+        // POST: Categories/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Category category)
         {
-            if (!ModelState.IsValid)
-                return View(category);
+            if (ModelState.IsValid)
+            {
+                _context.Categories.Add(category);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
 
-            _context.Categories.Add(category);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
+            return View(category);
         }
 
-        public async Task<IActionResult> Edit(string? id)
+        // GET: Categories/Edit
+        public async Task<IActionResult> Edit(string id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (id == null)
                 return NotFound();
 
             var category = await _context.Categories
-                .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .FirstOrDefaultAsync(x => x.categ_num == id);
 
             if (category == null)
                 return NotFound();
@@ -57,79 +56,82 @@ namespace WarehouseAccounting.Controllers
             return View(category);
         }
 
+        // POST: Categories/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, Category category)
+        public async Task<IActionResult> Edit(
+            string id,
+            string categ_num,
+            string? categ_name,
+            decimal? price,
+            string? qntt,
+            string? qnty,
+            int? group_num)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (id == null)
                 return NotFound();
 
-            if (!ModelState.IsValid)
-                return View(category);
-
-            // التأكد من أن الرقم الجديد غير مستخدم
-            if (id != category.Id)
+            // الرقم الجديد موجود مسبقاً؟
+            if (id != categ_num)
             {
                 bool exists = await _context.Categories
-                    .AsNoTracking()
-                    .AnyAsync(x => x.Id == category.Id);
+                    .AnyAsync(x => x.categ_num == categ_num);
 
                 if (exists)
                 {
                     ModelState.AddModelError(
-                        "Id",
-                        "رقم المنتج الجديد مستخدم بالفعل.");
+                        "categ_num",
+                        "رقم المنتج موجود مسبقاً."
+                    );
 
-                    return View(category);
+                    var oldCategory = await _context.Categories
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(x => x.categ_num == id);
+
+                    if (oldCategory != null)
+                    {
+                        oldCategory.categ_num = categ_num;
+                        oldCategory.categ_name = categ_name;
+                        oldCategory.price = price;
+                        oldCategory.qntt = qntt;
+                        oldCategory.qnty = qnty;
+                        oldCategory.group_num = group_num;
+                    }
+
+                    return View(oldCategory);
                 }
             }
 
-            try
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(x => x.categ_num == id);
+
+            if (category == null)
+                return NotFound();
+
+            category.categ_num = categ_num;
+            category.categ_name = categ_name;
+            category.price = price;
+            category.qntt = qntt;
+            category.qnty = qnty;
+            category.group_num = group_num;
+
+            if (ModelState.IsValid)
             {
-                // تحديث الرقم والاسم مباشرة في SQL Server
-                string sql = @"
-                    UPDATE dbo.categories
-                    SET categ_num = @newId,
-                        categ_name = @name
-                    WHERE categ_num = @oldId";
-
-                var result = await _context.Database.ExecuteSqlRawAsync(
-                    sql,
-                    new SqlParameter("@newId", category.Id),
-                    new SqlParameter("@name",
-                        (object?)category.Name ?? DBNull.Value),
-                    new SqlParameter("@oldId", id)
-                );
-
-                if (result == 0)
-                {
-                    ModelState.AddModelError(
-                        "",
-                        "لم يتم العثور على السجل القديم.");
-
-                    return View(category);
-                }
-
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError(
-                    "",
-                    "خطأ أثناء حفظ الرقم: " + ex.Message);
 
-                return View(category);
-            }
+            return View(category);
         }
 
-        public async Task<IActionResult> Delete(string? id)
+        // GET: Categories/Delete
+        public async Task<IActionResult> Delete(string id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (id == null)
                 return NotFound();
 
             var category = await _context.Categories
-                .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .FirstOrDefaultAsync(x => x.categ_num == id);
 
             if (category == null)
                 return NotFound();
@@ -137,12 +139,13 @@ namespace WarehouseAccounting.Controllers
             return View(category);
         }
 
+        // POST: Categories/Delete
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
             var category = await _context.Categories
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .FirstOrDefaultAsync(x => x.categ_num == id);
 
             if (category != null)
             {
