@@ -1,27 +1,33 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WarehouseAccounting.Data;
 
 namespace WarehouseAccounting.Controllers
 {
     public class CategoriesController : Controller
     {
-        public IActionResult Index()
+        private readonly AppDbContext _context;
+
+        public CategoriesController(AppDbContext context)
         {
-            return Content("CATEGORIES OK");
+            _context = context;
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Index()
         {
-            return Content("CREATE OK");
-        }
-
-        public IActionResult Edit(string id)
-        {
-            return Content("EDIT OK - " + id);
-        }
-
-        public IActionResult Delete(string id)
-        {
-            return Content("DELETE OK - " + id);
+            try
+            {
+                var count = await _context.Categories.CountAsync();
+                return Content($"DATABASE OK - Categories count: {count}");
+            }
+            catch (Exception ex)
+            {
+                return Content(
+                    "DATABASE ERROR\n\n" +
+                    ex.GetType().FullName + "\n\n" +
+                    ex.Message,
+                    "text/plain");
+            }
         }
     }
 }
