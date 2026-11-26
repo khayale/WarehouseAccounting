@@ -1,218 +1,209 @@
-@model WarehouseAccounting.Models.Category
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WarehouseAccounting.Data;
+using WarehouseAccounting.Models;
 
-@{
-    ViewData["Title"] = "تعديل المنتج";
-}
+namespace WarehouseAccounting.Controllers
+{
+    public class CategoriesController : Controller
+    {
+        private readonly AppDbContext _context;
 
-<h2>تعديل المنتج</h2>
+        public CategoriesController(AppDbContext context)
+        {
+            _context = context;
+        }
 
-<form asp-controller="Categories"
-      asp-action="Edit"
-      method="post">
+        public async Task<IActionResult> Index()
+        {
+            return View(await _context.Categories.ToListAsync());
+        }
 
-    @Html.AntiForgeryToken()
+        public IActionResult Create()
+        {
+            return View();
+        }
 
-    <!-- الرقم القديم للسجل -->
-    <input type="hidden"
-           name="oldId"
-           value="@Model.Id" />
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Category category)
+        {
+            if (!ModelState.IsValid)
+                return View(category);
 
-    <div asp-validation-summary="All"
-         class="text-danger"></div>
+            if (await _context.Categories.AnyAsync(x => x.Id == category.Id))
+            {
+                ModelState.AddModelError("Id", "رقم المنتج موجود مسبقاً.");
+                return View(category);
+            }
 
-    <!-- رقم المنتج -->
-    <div class="mb-3">
-        <label asp-for="Id">رقم المنتج</label>
+            _context.Categories.Add(category);
+            await _context.SaveChangesAsync();
 
-        <input asp-for="Id"
-               class="form-control" />
+            return RedirectToAction(nameof(Index));
+        }
 
-        <span asp-validation-for="Id"
-              class="text-danger"></span>
-    </div>
+        // =========================
+        // EDIT GET
+        // =========================
 
-    <!-- اسم المنتج -->
-    <div class="mb-3">
-        <label asp-for="Name">اسم المنتج</label>
+        public async Task<IActionResult> Edit(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                return NotFound();
 
-        <input asp-for="Name"
-               class="form-control" />
+            var category = await _context.Categories
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id);
 
-        <span asp-validation-for="Name"
-              class="text-danger"></span>
-    </div>
+            if (category == null)
+                return NotFound();
 
-    <!-- السعر -->
-    <div class="mb-3">
-        <label asp-for="Price">السعر</label>
+            return View(category);
+        }
 
-        <input asp-for="Price"
-               class="form-control" />
+        // =========================
+        // EDIT POST
+        // =========================
 
-        <span asp-validation-for="Price"
-              class="text-danger"></span>
-    </div>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(
+            string id,
+            Category model)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                return NotFound();
 
-    <!-- الكمية -->
-    <div class="mb-3">
-        <label asp-for="Qntt">الكمية</label>
+            // جلب السجل الأصلي من قاعدة البيانات
+            var oldCategory = await _context.Categories
+                .FirstOrDefaultAsync(x => x.Id == id);
 
-        <input asp-for="Qntt"
-               class="form-control" />
+            if (oldCategory == null)
+                return NotFound();
 
-        <span asp-validation-for="Qntt"
-              class="text-danger"></span>
-    </div>
+            // إذا كانت هناك أخطاء في البيانات
+            // نرجع نفس الصفحة بدون حذف البيانات
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
 
-    <!-- الوحدة -->
-    <div class="mb-3">
-        <label asp-for="Qnty">الوحدة</label>
+            // التأكد من وجود رقم المنتج
+            if (string.IsNullOrWhiteSpace(model.Id))
+            {
+                ModelState.AddModelError(
+                    "Id",
+                    "رقم المنتج مطلوب.");
 
-        <input asp-for="Qnty"
-               class="form-control" />
+                return View(model);
+            }
 
-        <span asp-validation-for="Qnty"
-              class="text-danger"></span>
-    </div>
+            model.Id = model.Id.Trim();
 
-    <!-- نوع الوحدة -->
-    <div class="mb-3">
-        <label asp-for="QntyType">نوع الوحدة</label>
+            // ==================================
+            // الرقم لم يتغير
+            // ==================================
 
-        <input asp-for="QntyType"
-               class="form-control" />
+            if (id == model.Id)
+            {
+                oldCategory.Name = model.Name;
+                oldCategory.Price = model.Price;
+                oldCategory.Qntt = model.Qntt;
+                oldCategory.Qnty = model.Qnty;
+                oldCategory.QntyType = model.QntyType;
+                oldCategory.Size = model.Size;
+                oldCategory.Color = model.Color;
+                oldCategory.Weight = model.Weight;
+                oldCategory.Model = model.Model;
+                oldCategory.Company = model.Company;
+                oldCategory.ProductionDate = model.ProductionDate;
+                oldCategory.ExpiryDate = model.ExpiryDate;
+                oldCategory.GroupName = model.GroupName;
+                oldCategory.GroupNum = model.GroupNum;
 
-        <span asp-validation-for="QntyType"
-              class="text-danger"></span>
-    </div>
+                await _context.SaveChangesAsync();
 
-    <!-- الحجم -->
-    <div class="mb-3">
-        <label asp-for="Size">الحجم</label>
+                return RedirectToAction(nameof(Index));
+            }
 
-        <input asp-for="Size"
-               class="form-control" />
+            // ==================================
+            // الرقم تغير
+            // ==================================
 
-        <span asp-validation-for="Size"
-              class="text-danger"></span>
-    </div>
+            bool exists = await _context.Categories
+                .AnyAsync(x => x.Id == model.Id);
 
-    <!-- اللون -->
-    <div class="mb-3">
-        <label asp-for="Color">اللون</label>
+            if (exists)
+            {
+                ModelState.AddModelError(
+                    "Id",
+                    "رقم المنتج الجديد موجود مسبقاً.");
 
-        <input asp-for="Color"
-               class="form-control" />
+                return View(model);
+            }
 
-        <span asp-validation-for="Color"
-              class="text-danger"></span>
-    </div>
+            // نسخ البيانات إلى الرقم الجديد
+            var newCategory = new Category
+            {
+                Id = model.Id,
+                Name = model.Name,
+                Price = model.Price,
+                Qntt = model.Qntt,
+                Qnty = model.Qnty,
+                QntyType = model.QntyType,
+                Size = model.Size,
+                Color = model.Color,
+                Weight = model.Weight,
+                Model = model.Model,
+                Company = model.Company,
+                ProductionDate = model.ProductionDate,
+                ExpiryDate = model.ExpiryDate,
+                GroupName = model.GroupName,
+                GroupNum = model.GroupNum
+            };
 
-    <!-- الوزن -->
-    <div class="mb-3">
-        <label asp-for="Weight">الوزن</label>
+            _context.Categories.Add(newCategory);
+            _context.Categories.Remove(oldCategory);
 
-        <input asp-for="Weight"
-               class="form-control" />
+            await _context.SaveChangesAsync();
 
-        <span asp-validation-for="Weight"
-              class="text-danger"></span>
-    </div>
+            return RedirectToAction(nameof(Index));
+        }
 
-    <!-- الموديل -->
-    <div class="mb-3">
-        <label asp-for="Model">الموديل</label>
+        // =========================
+        // DELETE
+        // =========================
 
-        <input asp-for="Model"
-               class="form-control" />
+        public async Task<IActionResult> Delete(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                return NotFound();
 
-        <span asp-validation-for="Model"
-              class="text-danger"></span>
-    </div>
+            var category = await _context.Categories
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id);
 
-    <!-- الشركة -->
-    <div class="mb-3">
-        <label asp-for="Company">الشركة</label>
+            if (category == null)
+                return NotFound();
 
-        <input asp-for="Company"
-               class="form-control" />
+            return View(category);
+        }
 
-        <span asp-validation-for="Company"
-              class="text-danger"></span>
-    </div>
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(string id)
+        {
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(x => x.Id == id);
 
-    <!-- تاريخ الإنتاج -->
-    <div class="mb-3">
-        <label asp-for="ProductionDate">
-            تاريخ الإنتاج
-        </label>
+            if (category != null)
+            {
+                _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
+            }
 
-        <input asp-for="ProductionDate"
-               type="date"
-               class="form-control" />
-
-        <span asp-validation-for="ProductionDate"
-              class="text-danger"></span>
-    </div>
-
-    <!-- تاريخ الانتهاء -->
-    <div class="mb-3">
-        <label asp-for="ExpiryDate">
-            تاريخ الانتهاء
-        </label>
-
-        <input asp-for="ExpiryDate"
-               type="date"
-               class="form-control" />
-
-        <span asp-validation-for="ExpiryDate"
-              class="text-danger"></span>
-    </div>
-
-    <!-- اسم المجموعة -->
-    <div class="mb-3">
-        <label asp-for="GroupName">
-            اسم المجموعة
-        </label>
-
-        <input asp-for="GroupName"
-               class="form-control" />
-
-        <span asp-validation-for="GroupName"
-              class="text-danger"></span>
-    </div>
-
-    <!-- رقم المجموعة -->
-    <div class="mb-3">
-        <label asp-for="GroupNum">
-            رقم المجموعة
-        </label>
-
-        <input asp-for="GroupNum"
-               class="form-control" />
-
-        <span asp-validation-for="GroupNum"
-              class="text-danger"></span>
-    </div>
-
-    <div class="mt-3">
-
-        <button type="submit"
-                class="btn btn-primary">
-            حفظ التعديل
-        </button>
-
-        <a asp-action="Index"
-           class="btn btn-secondary">
-            رجوع
-        </a>
-
-    </div>
-
-</form>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
