@@ -12,7 +12,7 @@
 
     @Html.AntiForgeryToken()
 
-    <!-- الرقم القديم للسجل -->
+    <!-- المفتاح الأصلي للسجل -->
     <input type="hidden"
            name="id"
            value="@Model.categ_num" />
@@ -21,19 +21,20 @@
          class="text-danger"></div>
 
 
+    <!-- Category Number -->
     <div class="form-group mb-3">
-        <label asp-for="categ_num" class="control-label">
+        <label class="control-label">
             Category Number
         </label>
 
-        <input asp-for="categ_num"
-               class="form-control" />
-
-        <span asp-validation-for="categ_num"
-              class="text-danger"></span>
+        <!-- للعرض فقط، لا نسمح بتغييره -->
+        <input class="form-control"
+               value="@Model.categ_num"
+               readonly />
     </div>
 
 
+    <!-- Category Name -->
     <div class="form-group mb-3">
         <label asp-for="categ_name" class="control-label">
             Category Name
@@ -47,6 +48,7 @@
     </div>
 
 
+    <!-- Price -->
     <div class="form-group mb-3">
         <label asp-for="price" class="control-label">
             Price
@@ -60,6 +62,7 @@
     </div>
 
 
+    <!-- Qntt -->
     <div class="form-group mb-3">
         <label asp-for="qntt" class="control-label">
             Qntt
@@ -73,6 +76,7 @@
     </div>
 
 
+    <!-- Qnty -->
     <div class="form-group mb-3">
         <label asp-for="qnty" class="control-label">
             Qnty
@@ -86,6 +90,7 @@
     </div>
 
 
+    <!-- Quantity Type -->
     <div class="form-group mb-3">
         <label asp-for="qntytype" class="control-label">
             Quantity Type
@@ -99,6 +104,7 @@
     </div>
 
 
+    <!-- Size -->
     <div class="form-group mb-3">
         <label asp-for="size" class="control-label">
             Size
@@ -112,6 +118,7 @@
     </div>
 
 
+    <!-- Color -->
     <div class="form-group mb-3">
         <label asp-for="color" class="control-label">
             Color
@@ -125,6 +132,7 @@
     </div>
 
 
+    <!-- Weight -->
     <div class="form-group mb-3">
         <label asp-for="weight" class="control-label">
             Weight
@@ -138,6 +146,7 @@
     </div>
 
 
+    <!-- Model -->
     <div class="form-group mb-3">
         <label asp-for="model" class="control-label">
             Model
@@ -151,6 +160,7 @@
     </div>
 
 
+    <!-- Company -->
     <div class="form-group mb-3">
         <label asp-for="company" class="control-label">
             Company
@@ -164,6 +174,7 @@
     </div>
 
 
+    <!-- Production Date -->
     <div class="form-group mb-3">
         <label asp-for="production_date" class="control-label">
             Production Date
@@ -178,6 +189,7 @@
     </div>
 
 
+    <!-- Expiry Date -->
     <div class="form-group mb-3">
         <label asp-for="expiry_date" class="control-label">
             Expiry Date
@@ -192,6 +204,7 @@
     </div>
 
 
+    <!-- Group Name -->
     <div class="form-group mb-3">
         <label asp-for="group_name" class="control-label">
             Group Name
@@ -205,6 +218,7 @@
     </div>
 
 
+    <!-- Group Number -->
     <div class="form-group mb-3">
         <label asp-for="group_num" class="control-label">
             Group Number
