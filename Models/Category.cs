@@ -9,58 +9,58 @@ namespace WarehouseAccounting.Models
         [Key]
         [Column("categ_num")]
         [StringLength(255)]
-        public string Id { get; set; } = string.Empty;
+        public string categ_num { get; set; } = string.Empty;
 
         [Column("categ_name")]
         [StringLength(255)]
-        public string? Name { get; set; }
+        public string? categ_name { get; set; }
 
         [Column("price")]
-        public decimal? Price { get; set; }
+        public decimal? price { get; set; }
 
         [Column("qntt")]
         [StringLength(255)]
-        public string? Qntt { get; set; }
+        public string? qntt { get; set; }
 
         [Column("qnty")]
         [StringLength(255)]
-        public string? Qnty { get; set; }
+        public string? qnty { get; set; }
 
         [Column("qntytype")]
         [StringLength(255)]
-        public string? QntyType { get; set; }
+        public string? qntytype { get; set; }
 
         [Column("size")]
         [StringLength(255)]
-        public string? Size { get; set; }
+        public string? size { get; set; }
 
         [Column("color")]
         [StringLength(255)]
-        public string? Color { get; set; }
+        public string? color { get; set; }
 
         [Column("weight")]
         [StringLength(255)]
-        public string? Weight { get; set; }
+        public string? weight { get; set; }
 
         [Column("model")]
         [StringLength(255)]
-        public string? Model { get; set; }
+        public string? model { get; set; }
 
         [Column("company")]
         [StringLength(255)]
-        public string? Company { get; set; }
+        public string? company { get; set; }
 
         [Column("production_date")]
-        public DateTime? ProductionDate { get; set; }
+        public DateTime? production_date { get; set; }
 
         [Column("expiry_date")]
-        public DateTime? ExpiryDate { get; set; }
+        public DateTime? expiry_date { get; set; }
 
         [Column("group_name")]
         [StringLength(255)]
-        public string? GroupName { get; set; }
+        public string? group_name { get; set; }
 
         [Column("group_num")]
-        public int? GroupNum { get; set; }
+        public int? group_num { get; set; }
     }
 }
