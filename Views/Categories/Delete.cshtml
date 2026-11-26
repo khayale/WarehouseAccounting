@@ -11,15 +11,41 @@
 </div>
 
 <dl class="row">
-    <dt class="col-sm-3">Category Number</dt>
-    <dd class="col-sm-9">@Model.Id</dd>
 
-    <dt class="col-sm-3">Category Name</dt>
-    <dd class="col-sm-9">@Model.Name</dd>
+    <dt class="col-sm-3">
+        Category Number
+    </dt>
+
+    <dd class="col-sm-9">
+        @Model.categ_num
+    </dd>
+
+    <dt class="col-sm-3">
+        Category Name
+    </dt>
+
+    <dd class="col-sm-9">
+        @Model.categ_name
+    </dd>
+
 </dl>
 
-<form asp-controller="Categories" asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post">
+<form asp-controller="Categories"
+      asp-action="DeleteConfirmed"
+      asp-route-id="@Model.categ_num"
+      method="post">
+
     @Html.AntiForgeryToken()
-    <button type="submit" class="btn btn-danger">Delete</button>
-    <a asp-controller="Categories" asp-action="Index" class="btn btn-secondary">Cancel</a>
+
+    <button type="submit"
+            class="btn btn-danger">
+        Delete
+    </button>
+
+    <a asp-controller="Categories"
+       asp-action="Index"
+       class="btn btn-secondary">
+        Cancel
+    </a>
+
 </form>
