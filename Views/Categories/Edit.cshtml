@@ -12,11 +12,14 @@
 
     @Html.AntiForgeryToken()
 
-    <!-- المفتاح القديم للسجل -->
-    <input type="hidden" name="id" value="@Model.categ_num" />
+    <!-- الرقم القديم للسجل -->
+    <input type="hidden"
+           name="id"
+           value="@Model.categ_num" />
 
     <div asp-validation-summary="ModelOnly"
          class="text-danger"></div>
+
 
     <div class="form-group mb-3">
         <label asp-for="categ_num" class="control-label">
@@ -30,6 +33,7 @@
               class="text-danger"></span>
     </div>
 
+
     <div class="form-group mb-3">
         <label asp-for="categ_name" class="control-label">
             Category Name
@@ -41,6 +45,7 @@
         <span asp-validation-for="categ_name"
               class="text-danger"></span>
     </div>
+
 
     <div class="form-group mb-3">
         <label asp-for="price" class="control-label">
@@ -54,6 +59,7 @@
               class="text-danger"></span>
     </div>
 
+
     <div class="form-group mb-3">
         <label asp-for="qntt" class="control-label">
             Qntt
@@ -65,6 +71,7 @@
         <span asp-validation-for="qntt"
               class="text-danger"></span>
     </div>
+
 
     <div class="form-group mb-3">
         <label asp-for="qnty" class="control-label">
@@ -78,6 +85,126 @@
               class="text-danger"></span>
     </div>
 
+
+    <div class="form-group mb-3">
+        <label asp-for="qntytype" class="control-label">
+            Quantity Type
+        </label>
+
+        <input asp-for="qntytype"
+               class="form-control" />
+
+        <span asp-validation-for="qntytype"
+              class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group mb-3">
+        <label asp-for="size" class="control-label">
+            Size
+        </label>
+
+        <input asp-for="size"
+               class="form-control" />
+
+        <span asp-validation-for="size"
+              class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group mb-3">
+        <label asp-for="color" class="control-label">
+            Color
+        </label>
+
+        <input asp-for="color"
+               class="form-control" />
+
+        <span asp-validation-for="color"
+              class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group mb-3">
+        <label asp-for="weight" class="control-label">
+            Weight
+        </label>
+
+        <input asp-for="weight"
+               class="form-control" />
+
+        <span asp-validation-for="weight"
+              class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group mb-3">
+        <label asp-for="model" class="control-label">
+            Model
+        </label>
+
+        <input asp-for="model"
+               class="form-control" />
+
+        <span asp-validation-for="model"
+              class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group mb-3">
+        <label asp-for="company" class="control-label">
+            Company
+        </label>
+
+        <input asp-for="company"
+               class="form-control" />
+
+        <span asp-validation-for="company"
+              class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group mb-3">
+        <label asp-for="production_date" class="control-label">
+            Production Date
+        </label>
+
+        <input asp-for="production_date"
+               type="date"
+               class="form-control" />
+
+        <span asp-validation-for="production_date"
+              class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group mb-3">
+        <label asp-for="expiry_date" class="control-label">
+            Expiry Date
+        </label>
+
+        <input asp-for="expiry_date"
+               type="date"
+               class="form-control" />
+
+        <span asp-validation-for="expiry_date"
+              class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group mb-3">
+        <label asp-for="group_name" class="control-label">
+            Group Name
+        </label>
+
+        <input asp-for="group_name"
+               class="form-control" />
+
+        <span asp-validation-for="group_name"
+              class="text-danger"></span>
+    </div>
+
+
     <div class="form-group mb-3">
         <label asp-for="group_num" class="control-label">
             Group Number
@@ -90,8 +217,11 @@
               class="text-danger"></span>
     </div>
 
+
     <div class="mt-3">
-        <button type="submit" class="btn btn-primary">
+
+        <button type="submit"
+                class="btn btn-primary">
             Save
         </button>
 
@@ -100,9 +230,11 @@
            class="btn btn-secondary">
             Back
         </a>
+
     </div>
 
 </form>
+
 
 @section Scripts {
     @{
