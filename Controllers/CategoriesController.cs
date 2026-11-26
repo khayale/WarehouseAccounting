@@ -18,11 +18,11 @@ namespace WarehouseAccounting.Controllers
         public async Task<IActionResult> Index()
         {
             var categories = await _context.Categories.ToListAsync();
-
             return View(categories);
         }
 
         // GET: Categories/Create
+        [HttpGet]
         public IActionResult Create()
         {
             return View();
@@ -33,16 +33,15 @@ namespace WarehouseAccounting.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Category category)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Categories.Add(category);
-
-                await _context.SaveChangesAsync();
-
-                return RedirectToAction(nameof(Index));
+                return View(category);
             }
 
-            return View(category);
+            _context.Categories.Add(category);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Categories/Edit
@@ -55,6 +54,7 @@ namespace WarehouseAccounting.Controllers
             }
 
             var category = await _context.Categories
+                .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.categ_num == id);
 
             if (category == null)
@@ -68,16 +68,14 @@ namespace WarehouseAccounting.Controllers
         // POST: Categories/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(
-            string id,
-            Category postedCategory)
+        public async Task<IActionResult> Edit(string id, Category postedCategory)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
                 return NotFound();
             }
 
-            // تحميل السجل الأصلي من قاعدة البيانات
+            // تحميل السجل الأصلي
             var category = await _context.Categories
                 .FirstOrDefaultAsync(c => c.categ_num == id);
 
@@ -86,8 +84,10 @@ namespace WarehouseAccounting.Controllers
                 return NotFound();
             }
 
-            // تحديث جميع الحقول الموجودة في الفورم
-            category.categ_num = postedCategory.categ_num;
+            // رقم التصنيف هو المفتاح الأساسي
+            // لذلك لا نغيّره هنا.
+            // نبقي category.categ_num كما هو.
+
             category.categ_name = postedCategory.categ_name;
             category.price = postedCategory.price;
             category.qntt = postedCategory.qntt;
@@ -107,14 +107,14 @@ namespace WarehouseAccounting.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateException ex)
             {
-                if (!await CategoryExists(id))
-                {
-                    return NotFound();
-                }
+                ModelState.AddModelError(
+                    "",
+                    "حدث خطأ أثناء حفظ التعديل: " + ex.InnerException?.Message
+                );
 
-                throw;
+                return View(postedCategory);
             }
 
             return RedirectToAction(nameof(Index));
@@ -157,7 +157,6 @@ namespace WarehouseAccounting.Controllers
             if (category != null)
             {
                 _context.Categories.Remove(category);
-
                 await _context.SaveChangesAsync();
             }
 
