@@ -19,14 +19,15 @@ namespace WarehouseAccounting.Data
             modelBuilder.Entity<Category>(entity =>
             {
                 entity.ToTable("categories", "dbo");
-                entity.HasKey(e => e.Id);
 
-                entity.Property(e => e.Id)
+                entity.HasKey(e => e.categ_num);
+
+                entity.Property(e => e.categ_num)
                     .HasColumnName("categ_num")
                     .HasMaxLength(255)
                     .IsRequired();
 
-                entity.Property(e => e.Name)
+                entity.Property(e => e.categ_name)
                     .HasColumnName("categ_name")
                     .HasMaxLength(255);
             });
