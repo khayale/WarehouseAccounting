@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WarehouseAccounting.Models
 {
-    // Maps to the actual table: storesdata.categories
     [Table("categories", Schema = "storesdata")]
     public class Category
     {
@@ -16,8 +15,6 @@ namespace WarehouseAccounting.Models
         [StringLength(255)]
         public string? Name { get; set; }
 
-        // Compatibility with existing Create/Edit/Delete views.
-        // This property is not stored in SQL because the table has no Description column.
         [NotMapped]
         public string? Description { get; set; }
     }
