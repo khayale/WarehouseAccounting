@@ -18,6 +18,7 @@ namespace WarehouseAccounting.Controllers
         public async Task<IActionResult> Index()
         {
             var categories = await _context.Categories.ToListAsync();
+
             return View(categories);
         }
 
@@ -35,6 +36,7 @@ namespace WarehouseAccounting.Controllers
             if (ModelState.IsValid)
             {
                 _context.Categories.Add(category);
+
                 await _context.SaveChangesAsync();
 
                 return RedirectToAction(nameof(Index));
@@ -44,9 +46,10 @@ namespace WarehouseAccounting.Controllers
         }
 
         // GET: Categories/Edit
+        [HttpGet]
         public async Task<IActionResult> Edit(string id)
         {
-            if (string.IsNullOrEmpty(id))
+            if (string.IsNullOrWhiteSpace(id))
             {
                 return NotFound();
             }
@@ -67,14 +70,9 @@ namespace WarehouseAccounting.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
             string id,
-            string categ_num,
-            string? categ_name,
-            decimal? price,
-            string? qntt,
-            string? qnty,
-            int? group_num)
+            Category postedCategory)
         {
-            if (string.IsNullOrEmpty(id))
+            if (string.IsNullOrWhiteSpace(id))
             {
                 return NotFound();
             }
@@ -88,15 +86,22 @@ namespace WarehouseAccounting.Controllers
                 return NotFound();
             }
 
-            // تعديل الحقول فقط
-            // السجل الأصلي يبقى محفوظًا بالنسبة لبقية الحقول
-
-            category.categ_num = categ_num;
-            category.categ_name = categ_name;
-            category.price = price;
-            category.qntt = qntt;
-            category.qnty = qnty;
-            category.group_num = group_num;
+            // تحديث جميع الحقول الموجودة في الفورم
+            category.categ_num = postedCategory.categ_num;
+            category.categ_name = postedCategory.categ_name;
+            category.price = postedCategory.price;
+            category.qntt = postedCategory.qntt;
+            category.qnty = postedCategory.qnty;
+            category.qntytype = postedCategory.qntytype;
+            category.size = postedCategory.size;
+            category.color = postedCategory.color;
+            category.weight = postedCategory.weight;
+            category.model = postedCategory.model;
+            category.company = postedCategory.company;
+            category.production_date = postedCategory.production_date;
+            category.expiry_date = postedCategory.expiry_date;
+            category.group_name = postedCategory.group_name;
+            category.group_num = postedCategory.group_num;
 
             try
             {
@@ -116,9 +121,10 @@ namespace WarehouseAccounting.Controllers
         }
 
         // GET: Categories/Delete
+        [HttpGet]
         public async Task<IActionResult> Delete(string id)
         {
-            if (string.IsNullOrEmpty(id))
+            if (string.IsNullOrWhiteSpace(id))
             {
                 return NotFound();
             }
@@ -135,11 +141,12 @@ namespace WarehouseAccounting.Controllers
         }
 
         // POST: Categories/Delete
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
+        [ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            if (string.IsNullOrEmpty(id))
+            if (string.IsNullOrWhiteSpace(id))
             {
                 return NotFound();
             }
@@ -150,6 +157,7 @@ namespace WarehouseAccounting.Controllers
             if (category != null)
             {
                 _context.Categories.Remove(category);
+
                 await _context.SaveChangesAsync();
             }
 
