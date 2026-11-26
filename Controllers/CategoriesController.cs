@@ -47,6 +47,7 @@ namespace WarehouseAccounting.Controllers
                 return NotFound();
 
             var category = await _context.Categories
+                .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (category == null)
@@ -59,20 +60,38 @@ namespace WarehouseAccounting.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string id, Category category)
         {
-            if (id != category.Id)
+            if (string.IsNullOrWhiteSpace(id))
                 return NotFound();
 
             if (!ModelState.IsValid)
                 return View(category);
 
-            var existing = await _context.Categories
-                .FirstOrDefaultAsync(c => c.Id == id);
+            // التأكد أن الرقم الجديد غير مستخدم
+            if (id != category.Id)
+            {
+                var exists = await _context.Categories
+                    .AsNoTracking()
+                    .AnyAsync(c => c.Id == category.Id);
 
-            if (existing == null)
+                if (exists)
+                {
+                    ModelState.AddModelError(
+                        "Id",
+                        "رقم المنتج الجديد مستخدم بالفعل.");
+
+                    return View(category);
+                }
+            }
+
+            // تعديل الرقم والاسم مباشرة في قاعدة البيانات
+            var rows = await _context.Database.ExecuteSqlInterpolatedAsync($@"
+                UPDATE dbo.categories
+                SET categ_num = {category.Id},
+                    categ_name = {category.Name}
+                WHERE categ_num = {id}");
+
+            if (rows == 0)
                 return NotFound();
-
-            existing.Name = category.Name;
-            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
