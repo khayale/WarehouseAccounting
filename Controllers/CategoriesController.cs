@@ -14,45 +14,21 @@ namespace WarehouseAccounting.Controllers
             _context = context;
         }
 
-        // =========================================================
-        // INDEX
-        // =========================================================
-
-        [HttpGet]
+        // GET: Categories
         public async Task<IActionResult> Index()
         {
-            try
-            {
-                var categories = await _context.Categories
-                    .ToListAsync();
-
-                return View(categories);
-            }
-            catch (Exception ex)
-            {
-                return Content(
-                    "INDEX ERROR\n\n" +
-                    ex.ToString()
-                );
-            }
+            var categories = await _context.Categories.ToListAsync();
+            return View(categories);
         }
 
-
-        // =========================================================
-        // CREATE - GET
-        // =========================================================
-
+        // GET: Categories/Create
         [HttpGet]
         public IActionResult Create()
         {
             return View();
         }
 
-
-        // =========================================================
-        // CREATE - POST
-        // =========================================================
-
+        // POST: Categories/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Category category)
@@ -62,42 +38,144 @@ namespace WarehouseAccounting.Controllers
                 return View(category);
             }
 
+            _context.Categories.Add(category);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Categories/Edit
+        [HttpGet]
+        public async Task<IActionResult> Edit(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return NotFound();
+            }
+
             try
             {
-                _context.Categories.Add(category);
+                var category = await _context.Categories
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(c => c.categ_num == id);
 
-                await _context.SaveChangesAsync();
+                if (category == null)
+                {
+                    return NotFound();
+                }
 
-                return RedirectToAction(nameof(Index));
+                return View(category);
             }
             catch (Exception ex)
             {
                 return Content(
-                    "CREATE ERROR\n\n" +
-                    ex.ToString()
+                    "EDIT ERROR: " + ex.Message +
+                    "\n\nINNER ERROR: " +
+                    (ex.InnerException?.Message ?? "None")
                 );
             }
         }
 
-
-        // =========================================================
-        // EDIT - GET
-        // =========================================================
-
-        [HttpGet]
-        public async Task<IActionResult> Edit(string id)
+        // POST: Categories/Edit
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(
+            string id,
+            Category postedCategory)
         {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return NotFound();
+            }
+
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.categ_num == id);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            // لا نغيّر categ_num لأنه Primary Key
+            category.categ_name = postedCategory.categ_name;
+            category.price = postedCategory.price;
+            category.qntt = postedCategory.qntt;
+            category.qnty = postedCategory.qnty;
+            category.qntytype = postedCategory.qntytype;
+            category.size = postedCategory.size;
+            category.color = postedCategory.color;
+            category.weight = postedCategory.weight;
+            category.model = postedCategory.model;
+            category.company = postedCategory.company;
+            category.production_date = postedCategory.production_date;
+            category.expiry_date = postedCategory.expiry_date;
+            category.group_name = postedCategory.group_name;
+            category.group_num = postedCategory.group_num;
+
             try
             {
-                if (string.IsNullOrWhiteSpace(id))
-                {
-                    return Content(
-                        "EDIT ERROR\n\n" +
-                        "The categ_num value is empty."
-                    );
-                }
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(
+                    "",
+                    "خطأ أثناء حفظ التعديل: " + ex.Message
+                );
 
-                var category = await _context.Categories
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(
-                        c => c
+                return View(postedCategory);
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Categories/Delete
+        [HttpGet]
+        public async Task<IActionResult> Delete(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return NotFound();
+            }
+
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.categ_num == id);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return View(category);
+        }
+
+        // POST: Categories/Delete
+        [HttpPost]
+        [ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return NotFound();
+            }
+
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.categ_num == id);
+
+            if (category != null)
+            {
+                _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        private async Task<bool> CategoryExists(string id)
+        {
+            return await _context.Categories
+                .AnyAsync(c => c.categ_num == id);
+        }
+    }
+}
