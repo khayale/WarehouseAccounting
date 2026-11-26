@@ -20,7 +20,6 @@
 
 <form asp-controller="Categories" asp-action="DeleteConfirmed" asp-route-id="@Model.Id" method="post">
     @Html.AntiForgeryToken()
-
     <button type="submit" class="btn btn-danger">Delete</button>
     <a asp-controller="Categories" asp-action="Index" class="btn btn-secondary">Cancel</a>
 </form>
