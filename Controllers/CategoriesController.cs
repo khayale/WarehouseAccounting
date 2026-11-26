@@ -14,67 +14,38 @@ namespace WarehouseAccounting.Controllers
             _context = context;
         }
 
-        // GET: Categories
+        // GET: /Categories
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Categories.ToListAsync());
+            var categories = await _context.Categories
+                .AsNoTracking()
+                .ToListAsync();
+
+            return View(categories);
         }
 
-        // GET: Categories/Create
+        // GET: /Categories/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Categories/Create
+        // POST: /Categories/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Category category)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Categories.Add(category);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
+            if (!ModelState.IsValid)
+                return View(category);
 
-            return View(category);
+            _context.Categories.Add(category);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Categories/Edit/{id}
-        public async Task<IActionResult> Edit(string? id)
-        {
-            if (string.IsNullOrWhiteSpace(id))
-                return NotFound();
-
-            var category = await _context.Categories.FindAsync(id);
-
-            if (category == null)
-                return NotFound();
-
-            return View(category);
-        }
-
-        // POST: Categories/Edit/{id}
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, Category category)
-        {
-            if (id != category.Id)
-                return NotFound();
-
-            if (ModelState.IsValid)
-            {
-                _context.Update(category);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-
-            return View(category);
-        }
-
-        // GET: Categories/Delete/{id}
-        public async Task<IActionResult> Delete(string? id)
+        // GET: /Categories/Edit/{id}
+        public async Task<IActionResult> Edit(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
                 return NotFound();
@@ -88,12 +59,53 @@ namespace WarehouseAccounting.Controllers
             return View(category);
         }
 
-        // POST: Categories/Delete/{id}
-        [HttpPost, ActionName("Delete")]
+        // POST: /Categories/Edit/{id}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(string id, Category category)
+        {
+            if (id != category.Id)
+                return NotFound();
+
+            if (!ModelState.IsValid)
+                return View(category);
+
+            var existing = await _context.Categories
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (existing == null)
+                return NotFound();
+
+            existing.Name = category.Name;
+
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: /Categories/Delete/{id}
+        public async Task<IActionResult> Delete(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                return NotFound();
+
+            var category = await _context.Categories
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (category == null)
+                return NotFound();
+
+            return View(category);
+        }
+
+        // POST: /Categories/Delete/{id}
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var category = await _context.Categories.FindAsync(id);
+            var category = await _context.Categories
+                .FirstOrDefaultAsync(c => c.Id == id);
 
             if (category != null)
             {
