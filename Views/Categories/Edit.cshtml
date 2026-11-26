@@ -12,16 +12,16 @@
 
     @Html.AntiForgeryToken()
 
-    <input type="hidden"
-           name="id"
-           value="@Model.categ_num" />
+    <!-- Primary Key -->
+    <input type="hidden" name="id" value="@Model.categ_num" />
 
     <div asp-validation-summary="ModelOnly"
-         class="text-danger">
+         class="text-danger mb-3">
     </div>
 
+    <!-- Category Number -->
     <div class="mb-3">
-        <label>Category Number</label>
+        <label class="form-label">Category Number</label>
 
         <input type="text"
                class="form-control"
@@ -29,13 +29,198 @@
                readonly />
     </div>
 
+    <!-- Category Name -->
     <div class="mb-3">
-        <label asp-for="categ_name"></label>
+        <label asp-for="categ_name" class="form-label">
+            Category Name
+        </label>
 
         <input asp-for="categ_name"
                class="form-control" />
 
         <span asp-validation-for="categ_name"
+              class="text-danger">
+        </span>
+    </div>
+
+    <!-- Price -->
+    <div class="mb-3">
+        <label asp-for="price" class="form-label">
+            Price
+        </label>
+
+        <input asp-for="price"
+               class="form-control" />
+
+        <span asp-validation-for="price"
+              class="text-danger">
+        </span>
+    </div>
+
+    <!-- Qntt -->
+    <div class="mb-3">
+        <label asp-for="qntt" class="form-label">
+            Qntt
+        </label>
+
+        <input asp-for="qntt"
+               class="form-control" />
+
+        <span asp-validation-for="qntt"
+              class="text-danger">
+        </span>
+    </div>
+
+    <!-- Qnty -->
+    <div class="mb-3">
+        <label asp-for="qnty" class="form-label">
+            Qnty
+        </label>
+
+        <input asp-for="qnty"
+               class="form-control" />
+
+        <span asp-validation-for="qnty"
+              class="text-danger">
+        </span>
+    </div>
+
+    <!-- Qnty Type -->
+    <div class="mb-3">
+        <label asp-for="qntytype" class="form-label">
+            Qnty Type
+        </label>
+
+        <input asp-for="qntytype"
+               class="form-control" />
+
+        <span asp-validation-for="qntytype"
+              class="text-danger">
+        </span>
+    </div>
+
+    <!-- Size -->
+    <div class="mb-3">
+        <label asp-for="size" class="form-label">
+            Size
+        </label>
+
+        <input asp-for="size"
+               class="form-control" />
+
+        <span asp-validation-for="size"
+              class="text-danger">
+        </span>
+    </div>
+
+    <!-- Color -->
+    <div class="mb-3">
+        <label asp-for="color" class="form-label">
+            Color
+        </label>
+
+        <input asp-for="color"
+               class="form-control" />
+
+        <span asp-validation-for="color"
+              class="text-danger">
+        </span>
+    </div>
+
+    <!-- Weight -->
+    <div class="mb-3">
+        <label asp-for="weight" class="form-label">
+            Weight
+        </label>
+
+        <input asp-for="weight"
+               class="form-control" />
+
+        <span asp-validation-for="weight"
+              class="text-danger">
+        </span>
+    </div>
+
+    <!-- Model -->
+    <div class="mb-3">
+        <label asp-for="model" class="form-label">
+            Model
+        </label>
+
+        <input asp-for="model"
+               class="form-control" />
+
+        <span asp-validation-for="model"
+              class="text-danger">
+        </span>
+    </div>
+
+    <!-- Company -->
+    <div class="mb-3">
+        <label asp-for="company" class="form-label">
+            Company
+        </label>
+
+        <input asp-for="company"
+               class="form-control" />
+
+        <span asp-validation-for="company"
+              class="text-danger">
+        </span>
+    </div>
+
+    <!-- Production Date -->
+    <div class="mb-3">
+        <label asp-for="production_date" class="form-label">
+            Production Date
+        </label>
+
+        <input asp-for="production_date"
+               class="form-control" />
+
+        <span asp-validation-for="production_date"
+              class="text-danger">
+        </span>
+    </div>
+
+    <!-- Expiry Date -->
+    <div class="mb-3">
+        <label asp-for="expiry_date" class="form-label">
+            Expiry Date
+        </label>
+
+        <input asp-for="expiry_date"
+               class="form-control" />
+
+        <span asp-validation-for="expiry_date"
+              class="text-danger">
+        </span>
+    </div>
+
+    <!-- Group Name -->
+    <div class="mb-3">
+        <label asp-for="group_name" class="form-label">
+            Group Name
+        </label>
+
+        <input asp-for="group_name"
+               class="form-control" />
+
+        <span asp-validation-for="group_name"
+              class="text-danger">
+        </span>
+    </div>
+
+    <!-- Group Number -->
+    <div class="mb-3">
+        <label asp-for="group_num" class="form-label">
+            Group Number
+        </label>
+
+        <input asp-for="group_num"
+               class="form-control" />
+
+        <span asp-validation-for="group_num"
               class="text-danger">
         </span>
     </div>
@@ -52,3 +237,9 @@
     </a>
 
 </form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
