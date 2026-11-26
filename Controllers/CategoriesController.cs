@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 using WarehouseAccounting.Data;
 using WarehouseAccounting.Models;
 
@@ -66,12 +67,12 @@ namespace WarehouseAccounting.Controllers
             if (!ModelState.IsValid)
                 return View(category);
 
-            // التأكد أن الرقم الجديد غير مستخدم
+            // التأكد من أن الرقم الجديد غير مستخدم
             if (id != category.Id)
             {
-                var exists = await _context.Categories
+                bool exists = await _context.Categories
                     .AsNoTracking()
-                    .AnyAsync(c => c.Id == category.Id);
+                    .AnyAsync(x => x.Id == category.Id);
 
                 if (exists)
                 {
@@ -83,17 +84,42 @@ namespace WarehouseAccounting.Controllers
                 }
             }
 
-            // تعديل الرقم والاسم مباشرة في قاعدة البيانات
-            var rows = await _context.Database.ExecuteSqlInterpolatedAsync($@"
-                UPDATE dbo.categories
-                SET categ_num = {category.Id},
-                    categ_name = {category.Name}
-                WHERE categ_num = {id}");
+            try
+            {
+                // تحديث الرقم والاسم مباشرة في SQL Server
+                string sql = @"
+                    UPDATE dbo.categories
+                    SET categ_num = @newId,
+                        categ_name = @name
+                    WHERE categ_num = @oldId";
 
-            if (rows == 0)
-                return NotFound();
+                var result = await _context.Database.ExecuteSqlRawAsync(
+                    sql,
+                    new SqlParameter("@newId", category.Id),
+                    new SqlParameter("@name",
+                        (object?)category.Name ?? DBNull.Value),
+                    new SqlParameter("@oldId", id)
+                );
 
-            return RedirectToAction(nameof(Index));
+                if (result == 0)
+                {
+                    ModelState.AddModelError(
+                        "",
+                        "لم يتم العثور على السجل القديم.");
+
+                    return View(category);
+                }
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(
+                    "",
+                    "خطأ أثناء حفظ الرقم: " + ex.Message);
+
+                return View(category);
+            }
         }
 
         public async Task<IActionResult> Delete(string? id)
